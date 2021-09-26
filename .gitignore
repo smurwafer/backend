@@ -1,6 +1,6 @@
-node_modules
+node_modules/
 .DS_Store
-images
-build
+dist/
+images/
 package-lock.json
 tsconfig.json
