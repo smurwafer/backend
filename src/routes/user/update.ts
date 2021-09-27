@@ -1,3 +1,5 @@
+import fs from 'fs';
+import util from 'util';
 import express, { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
 import { requireAuth } from '../../middlewares/require-auth';
@@ -5,8 +7,11 @@ import { Profile } from '../../models/profile';
 import { User } from '../../models/user';
 import { PasswordValidator } from '../../validators/password/password-validator';
 import { validateRequest } from '../../middlewares/validate-request';
+import { uploadFile } from '../../../s3';
 
 const Router = express.Router();
+
+const unlink = util.promisify(fs.unlink);
 
 Router.put('/api/user/:id', requireAuth, async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -22,7 +27,17 @@ Router.put('/api/user/:id', requireAuth, async (req: Request, res: Response, nex
         let imageUrl = user.imageUrl;
 
         if (req.files && req.files.length > 0) {
-            imageUrl = (req.files as Express.Multer.File[])[0].path as string;
+            const file = (req.files as Express.Multer.File[])[0];
+            console.log('aws result awaited',file);
+            imageUrl = file.path as string;
+            try {
+                const result = await uploadFile(file);
+                console.log('aws result',result);
+                imageUrl = '/images/' + result.Key;
+                await unlink(file.path);
+            } catch (err) {
+                console.log('aws error', err);
+            }
         }
     
         user.set({
