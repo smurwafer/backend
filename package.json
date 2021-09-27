@@ -5,8 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "build": "tsc",
-    "heroku-postbuild": "npm run build",
+    "postinstall": "tsc --sourceMap false",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
