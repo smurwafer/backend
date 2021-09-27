@@ -3,3 +3,4 @@ node_modules/
 images/
 package-lock.json
 tsconfig.json
+.env

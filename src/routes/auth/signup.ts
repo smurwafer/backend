@@ -1,3 +1,5 @@
+import fs from 'fs';
+import util from 'util';
 import express, { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
@@ -7,10 +9,13 @@ import { AuthValidator } from '../../validators/auth/auth-validator';
 import { validateRequest } from '../../middlewares/validate-request';
 import { Profile } from '../../models/profile';
 import { Dashboard } from '../../models/dashboard';
+import { uploadFile } from '../../../s3';
 
 const sendGridTransport = require('nodemailer-sendgrid-transport');
 
 const Router = express.Router();
+
+const unlink = util.promisify(fs.unlink);
 
 Router.post('/api/auth/signup', AuthValidator, validateRequest, async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -39,7 +44,11 @@ Router.post('/api/auth/signup', AuthValidator, validateRequest, async (req: Requ
         let imageUrl = "";
 
         if (req.files && req.files.length > 0) {
-            imageUrl = (req.files as Express.Multer.File[])[0].path as string;
+            const file = (req.files as Express.Multer.File[])[0];
+            imageUrl = file.path as string;
+            const result = await uploadFile(file);
+            imageUrl = '/images/' + result.Key;
+            await unlink(file.path);
         }
     
         const user = User.build({

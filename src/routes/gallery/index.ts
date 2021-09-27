@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { getFileStream } from '../../../s3';
 import { requireAuth } from '../../middlewares/require-auth';
 import { Gallery } from '../../models/gallery';
 
@@ -11,6 +12,12 @@ Router.get('/api/gallery', requireAuth, async (req: Request, res: Response, next
         message: 'galleries fetched successfully',
         galleries,
     });
+});
+
+Router.get('/images/:key', (req: Request, res: Response) => {
+    const key = req.params.key;
+    const readStream = getFileStream(key);
+    readStream.pipe(res);
 });
 
 export { Router as GalleryIndexRouter };
