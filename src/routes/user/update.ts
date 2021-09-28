@@ -28,11 +28,9 @@ Router.put('/api/user/:id', requireAuth, async (req: Request, res: Response, nex
 
         if (req.files && req.files.length > 0) {
             const file = (req.files as Express.Multer.File[])[0];
-            console.log('aws result awaited',file);
             imageUrl = file.path as string;
             try {
                 const result = await uploadFile(file);
-                console.log('aws result',result);
                 imageUrl = 'images/' + result.Key;
                 await unlink(file.path);
             } catch (err) {
@@ -106,11 +104,9 @@ Router.put('/api/profile/:id', requireAuth, async (req: Request, res: Response, 
 
         if (req.files && req.files.length > 0) {
             const file = (req.files as Express.Multer.File[])[0];
-            console.log('aws result awaited',file);
             themeUrl = file.path as string;
             try {
                 const result = await uploadFile(file);
-                console.log('aws result',result);
                 themeUrl = 'images/' + result.Key;
                 await unlink(file.path);
             } catch (err) {

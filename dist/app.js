@@ -134,6 +134,7 @@ app.use(show_10.SettingShowRouter);
 app.use(update_7.SettingUpdateRouter);
 app.use(delete_9.SettingDeleteRouter);
 app.all('*', function (req, res) {
+    console.log(req.path);
     throw new Error('API route not found!');
 });
 app.use(function (err, req, res, next) {

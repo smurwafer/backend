@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 import { app } from './app';
 import socket from './socket';
 import * as http from 'http';
-import { User } from './src/models/user';
 
 const start = async () => {
     try {
@@ -21,12 +20,12 @@ const start = async () => {
         console.log('Listening on port:' + port);
     });
 
-    const io = socket.init(server);
-    io.on('connection', (socket) => {
-        socket.on('disconnect', (reason) => {
-            console.log('disconnected '+ reason);
-        });
-    });
+    // const io = socket.init(server);
+    // io.on('connection', (socket) => {
+    //     socket.on('disconnect', (reason) => {
+    //         console.log('disconnected '+ reason);
+    //     });
+    // });
 }
 
 start();

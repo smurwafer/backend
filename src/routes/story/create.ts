@@ -95,9 +95,9 @@ const updateAllDashboards = async (id: string, title: string) => {
 
                 await c.save();
 
-                socket.getIo().emit('result', {
-                    message: 'Results are out for story ' + title,
-                });
+                // socket.getIo().emit('result', {
+                //     message: 'Results are out for story ' + title,
+                // });
             }
         });
 

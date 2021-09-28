@@ -41,9 +41,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 var mongoose_1 = __importDefault(require("mongoose"));
 var app_1 = require("./app");
-var socket_1 = __importDefault(require("./socket"));
 var start = function () { return __awaiter(void 0, void 0, void 0, function () {
-    var error_1, port, server, io;
+    var error_1, port, server;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -63,12 +62,6 @@ var start = function () { return __awaiter(void 0, void 0, void 0, function () {
                 port = process.env.PORT || 2000;
                 server = app_1.app.listen(port, function () {
                     console.log('Listening on port:' + port);
-                });
-                io = socket_1.default.init(server);
-                io.on('connection', function (socket) {
-                    socket.on('disconnect', function (reason) {
-                        console.log('disconnected ' + reason);
-                    });
                 });
                 return [2 /*return*/];
         }

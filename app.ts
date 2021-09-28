@@ -135,6 +135,7 @@ app.use(SettingUpdateRouter);
 app.use(SettingDeleteRouter);
 
 app.all('*', (req: Request, res: Response) => {
+    console.log(req.path);
     throw new Error('API route not found!');
 });
 

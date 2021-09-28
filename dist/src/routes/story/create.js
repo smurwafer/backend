@@ -49,7 +49,6 @@ var gamble_1 = require("../../models/gamble");
 var story_1 = require("../../models/story");
 var hat_1 = require("../../utility/hat");
 var story_validator_1 = require("../../validators/story/story-validator");
-var socket_1 = __importDefault(require("../../../socket"));
 var Router = express_1.default.Router();
 exports.StoryCreateRouter = Router;
 var max = function (a, b) {
@@ -145,9 +144,6 @@ var updateAllDashboards = function (id, title) { return __awaiter(void 0, void 0
                                 return [4 /*yield*/, c.save()];
                             case 3:
                                 _a.sent();
-                                socket_1.default.getIo().emit('result', {
-                                    message: 'Results are out for story ' + title,
-                                });
                                 _a.label = 4;
                             case 4: return [2 /*return*/];
                         }

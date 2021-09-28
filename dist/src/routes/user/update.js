@@ -70,7 +70,6 @@ Router.put('/api/user/:id', require_auth_1.requireAuth, function (req, res, next
                 imageUrl = user.imageUrl;
                 if (!(req.files && req.files.length > 0)) return [3 /*break*/, 6];
                 file = req.files[0];
-                console.log('aws result awaited', file);
                 imageUrl = file.path;
                 _b.label = 2;
             case 2:
@@ -78,7 +77,6 @@ Router.put('/api/user/:id', require_auth_1.requireAuth, function (req, res, next
                 return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
             case 3:
                 result = _b.sent();
-                console.log('aws result', result);
                 imageUrl = 'images/' + result.Key;
                 return [4 /*yield*/, unlink(file.path)];
             case 4:
@@ -171,7 +169,6 @@ Router.put('/api/profile/:id', require_auth_1.requireAuth, function (req, res, n
                 themeUrl = profile.themeUrl;
                 if (!(req.files && req.files.length > 0)) return [3 /*break*/, 6];
                 file = req.files[0];
-                console.log('aws result awaited', file);
                 themeUrl = file.path;
                 _b.label = 2;
             case 2:
@@ -179,7 +176,6 @@ Router.put('/api/profile/:id', require_auth_1.requireAuth, function (req, res, n
                 return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
             case 3:
                 result = _b.sent();
-                console.log('aws result', result);
                 themeUrl = 'images/' + result.Key;
                 return [4 /*yield*/, unlink(file.path)];
             case 4:
