@@ -50,10 +50,11 @@ Router.post('/api/auth/signup', AuthValidator, validateRequest, async (req: Requ
             try {
                 const result = await uploadFile(file);
                 console.log('aws result',result);
-                imageUrl = '/images/' + result.Key;
+                imageUrl = 'images/' + result.Key;
                 await unlink(file.path);
             } catch (err) {
                 console.log('aws error', err);
+                throw err;
             }
         }
     

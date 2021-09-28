@@ -40,18 +40,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GalleryCreateRouter = void 0;
+var fs_1 = __importDefault(require("fs"));
+var util_1 = __importDefault(require("util"));
 var express_1 = __importDefault(require("express"));
+var s3_1 = require("../../../s3");
 var require_auth_1 = require("../../middlewares/require-auth");
 var gallery_1 = require("../../models/gallery");
 var gallery_type_1 = require("../../utility/gallery-type");
 var Router = express_1.default.Router();
 exports.GalleryCreateRouter = Router;
+var unlink = util_1.default.promisify(fs_1.default.unlink);
 Router.post('/api/gallery', require_auth_1.requireAuth, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, caption, type, url, modifiedType, imageUrl, videoUrl, isResourceUrl, gallery, err_1;
+    var _a, caption, type, url, modifiedType, imageUrl, videoUrl, isResourceUrl, file, result, file, result, gallery, err_1;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 2, , 3]);
+                _b.trys.push([0, 9, , 10]);
                 _a = req.body, caption = _a.caption, type = _a.type, url = _a.url;
                 modifiedType = gallery_type_1.GalleryType.Image;
                 imageUrl = "", videoUrl = "", isResourceUrl = false;
@@ -64,19 +68,35 @@ Router.post('/api/gallery', require_auth_1.requireAuth, function (req, res, next
                         imageUrl = url;
                     }
                 }
-                if (type === 'video') {
-                    modifiedType = gallery_type_1.GalleryType.Video;
-                    if (req.files && req.files.length > 0) {
-                        isResourceUrl = false;
-                        videoUrl = req.files[0].path;
-                    }
-                }
-                else {
-                    if (req.files && req.files.length > 0) {
-                        isResourceUrl = false;
-                        imageUrl = req.files[0].path;
-                    }
-                }
+                if (!(type === 'video')) return [3 /*break*/, 4];
+                modifiedType = gallery_type_1.GalleryType.Video;
+                if (!(req.files && req.files.length > 0)) return [3 /*break*/, 3];
+                file = req.files[0];
+                isResourceUrl = false;
+                videoUrl = file.path;
+                return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
+            case 1:
+                result = _b.sent();
+                videoUrl = 'videos/' + result.Key;
+                return [4 /*yield*/, unlink(file.path)];
+            case 2:
+                _b.sent();
+                _b.label = 3;
+            case 3: return [3 /*break*/, 7];
+            case 4:
+                if (!(req.files && req.files.length > 0)) return [3 /*break*/, 7];
+                file = req.files[0];
+                isResourceUrl = false;
+                imageUrl = file.path;
+                return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
+            case 5:
+                result = _b.sent();
+                imageUrl = 'images/' + result.Key;
+                return [4 /*yield*/, unlink(file.path)];
+            case 6:
+                _b.sent();
+                _b.label = 7;
+            case 7:
                 gallery = gallery_1.Gallery.build({
                     imageUrl: imageUrl,
                     videoUrl: videoUrl,
@@ -85,18 +105,18 @@ Router.post('/api/gallery', require_auth_1.requireAuth, function (req, res, next
                     isResourceUrl: isResourceUrl
                 });
                 return [4 /*yield*/, gallery.save()];
-            case 1:
+            case 8:
                 _b.sent();
                 res.status(201).send({
                     message: 'gallery created successfully',
                     gallery: gallery,
                 });
-                return [3 /*break*/, 3];
-            case 2:
+                return [3 /*break*/, 10];
+            case 9:
                 err_1 = _b.sent();
                 next(err_1);
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
+                return [3 /*break*/, 10];
+            case 10: return [2 /*return*/];
         }
     });
 }); });

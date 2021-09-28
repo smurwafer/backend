@@ -34,7 +34,7 @@ Router.post('/api/gallery', requireAuth, async (req: Request, res: Response, nex
                 isResourceUrl = false;
                 videoUrl = file.path as string;
                 const result = await uploadFile(file);
-                videoUrl = '/videos/' + result.Key;
+                videoUrl = 'videos/' + result.Key;
                 await unlink(file.path);
             }
         } else {
@@ -43,7 +43,7 @@ Router.post('/api/gallery', requireAuth, async (req: Request, res: Response, nex
                 isResourceUrl = false;
                 imageUrl = file.path as string;
                 const result = await uploadFile(file);
-                imageUrl = '/images/' + result.Key;
+                imageUrl = 'images/' + result.Key;
                 await unlink(file.path);
             }
         }

@@ -40,6 +40,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SignupRouter = void 0;
+var fs_1 = __importDefault(require("fs"));
+var util_1 = __importDefault(require("util"));
 var express_1 = __importDefault(require("express"));
 var jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 var bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -49,15 +51,17 @@ var auth_validator_1 = require("../../validators/auth/auth-validator");
 var validate_request_1 = require("../../middlewares/validate-request");
 var profile_1 = require("../../models/profile");
 var dashboard_1 = require("../../models/dashboard");
+var s3_1 = require("../../../s3");
 var sendGridTransport = require('nodemailer-sendgrid-transport');
 var Router = express_1.default.Router();
 exports.SignupRouter = Router;
+var unlink = util_1.default.promisify(fs_1.default.unlink);
 Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request_1.validateRequest, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var _a, userName, name_1, email, age, password, transporter, existingUser1, existingUser2, passwordHash, imageUrl, user, token, expiryDate, profile, dashboard, err_1;
+    var _a, userName, name_1, email, age, password, transporter, existingUser1, existingUser2, passwordHash, imageUrl, file, result, err_1, user, token, expiryDate, profile, dashboard, err_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 8, , 9]);
+                _b.trys.push([0, 13, , 14]);
                 _a = req.body, userName = _a.userName, name_1 = _a.name, email = _a.email, age = _a.age, password = _a.password;
                 transporter = nodemailer_1.default.createTransport(sendGridTransport({
                     auth: {
@@ -80,9 +84,27 @@ Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request
             case 3:
                 passwordHash = _b.sent();
                 imageUrl = "";
-                if (req.files && req.files.length > 0) {
-                    imageUrl = req.files[0].path;
-                }
+                if (!(req.files && req.files.length > 0)) return [3 /*break*/, 8];
+                file = req.files[0];
+                console.log('aws result awaited', file);
+                imageUrl = file.path;
+                _b.label = 4;
+            case 4:
+                _b.trys.push([4, 7, , 8]);
+                return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
+            case 5:
+                result = _b.sent();
+                console.log('aws result', result);
+                imageUrl = 'images/' + result.Key;
+                return [4 /*yield*/, unlink(file.path)];
+            case 6:
+                _b.sent();
+                return [3 /*break*/, 8];
+            case 7:
+                err_1 = _b.sent();
+                console.log('aws error', err_1);
+                throw err_1;
+            case 8:
                 user = user_1.User.build({
                     userName: userName,
                     name: name_1,
@@ -92,7 +114,7 @@ Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request
                     password: passwordHash, online: false,
                 });
                 return [4 /*yield*/, user.save()];
-            case 4:
+            case 9:
                 _b.sent();
                 token = jsonwebtoken_1.default.sign({ email: email, id: user.id }, 'secret', {
                     expiresIn: '24h',
@@ -105,7 +127,7 @@ Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request
                     dob: '',
                 });
                 return [4 /*yield*/, profile.save()];
-            case 5:
+            case 10:
                 _b.sent();
                 return [4 /*yield*/, transporter.sendMail({
                         to: email,
@@ -113,7 +135,7 @@ Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request
                         subject: 'Welcome to smurwafer!',
                         html: '<h1>You have successfully signed up on smurwafer.</h1>',
                     })];
-            case 6:
+            case 11:
                 _b.sent();
                 dashboard = dashboard_1.Dashboard.build({
                     user: user.id,
@@ -126,7 +148,7 @@ Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request
                     bestProfit: 0,
                 });
                 return [4 /*yield*/, dashboard.save()];
-            case 7:
+            case 12:
                 _b.sent();
                 res.status(201).send({
                     message: 'User signed up successfully',
@@ -134,12 +156,12 @@ Router.post('/api/auth/signup', auth_validator_1.AuthValidator, validate_request
                     id: user.id,
                     expiryDate: expiryDate,
                 });
-                return [3 /*break*/, 9];
-            case 8:
-                err_1 = _b.sent();
-                next(err_1);
-                return [3 /*break*/, 9];
-            case 9: return [2 /*return*/];
+                return [3 /*break*/, 14];
+            case 13:
+                err_2 = _b.sent();
+                next(err_2);
+                return [3 /*break*/, 14];
+            case 14: return [2 /*return*/];
         }
     });
 }); });

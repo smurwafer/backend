@@ -41,6 +41,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GalleryIndexRouter = void 0;
 var express_1 = __importDefault(require("express"));
+var s3_1 = require("../../../s3");
 var require_auth_1 = require("../../middlewares/require-auth");
 var gallery_1 = require("../../models/gallery");
 var Router = express_1.default.Router();
@@ -60,3 +61,8 @@ Router.get('/api/gallery', require_auth_1.requireAuth, function (req, res, next)
         }
     });
 }); });
+Router.get('/images/:key', function (req, res) {
+    var key = req.params.key;
+    var readStream = (0, s3_1.getFileStream)(key);
+    readStream.pipe(res);
+});

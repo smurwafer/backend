@@ -40,6 +40,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserUpdateRouter = void 0;
+var fs_1 = __importDefault(require("fs"));
+var util_1 = __importDefault(require("util"));
 var express_1 = __importDefault(require("express"));
 var bcryptjs_1 = __importDefault(require("bcryptjs"));
 var require_auth_1 = require("../../middlewares/require-auth");
@@ -47,14 +49,16 @@ var profile_1 = require("../../models/profile");
 var user_1 = require("../../models/user");
 var password_validator_1 = require("../../validators/password/password-validator");
 var validate_request_1 = require("../../middlewares/validate-request");
+var s3_1 = require("../../../s3");
 var Router = express_1.default.Router();
 exports.UserUpdateRouter = Router;
+var unlink = util_1.default.promisify(fs_1.default.unlink);
 Router.put('/api/user/:id', require_auth_1.requireAuth, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, user, _a, userName, name_1, email, age, imageUrl, err_1;
+    var id, user, _a, userName, name_1, email, age, imageUrl, file, result, err_1, err_2;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 3, , 4]);
+                _b.trys.push([0, 8, , 9]);
                 id = req.params.id;
                 return [4 /*yield*/, user_1.User.findById(id)];
             case 1:
@@ -64,9 +68,27 @@ Router.put('/api/user/:id', require_auth_1.requireAuth, function (req, res, next
                 }
                 _a = req.body, userName = _a.userName, name_1 = _a.name, email = _a.email, age = _a.age;
                 imageUrl = user.imageUrl;
-                if (req.files && req.files.length > 0) {
-                    imageUrl = req.files[0].path;
-                }
+                if (!(req.files && req.files.length > 0)) return [3 /*break*/, 6];
+                file = req.files[0];
+                console.log('aws result awaited', file);
+                imageUrl = file.path;
+                _b.label = 2;
+            case 2:
+                _b.trys.push([2, 5, , 6]);
+                return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
+            case 3:
+                result = _b.sent();
+                console.log('aws result', result);
+                imageUrl = 'images/' + result.Key;
+                return [4 /*yield*/, unlink(file.path)];
+            case 4:
+                _b.sent();
+                return [3 /*break*/, 6];
+            case 5:
+                err_1 = _b.sent();
+                console.log('aws error', err_1);
+                throw err_1;
+            case 6:
                 user.set({
                     userName: userName,
                     name: name_1,
@@ -75,23 +97,23 @@ Router.put('/api/user/:id', require_auth_1.requireAuth, function (req, res, next
                     age: age
                 });
                 return [4 /*yield*/, user.save()];
-            case 2:
+            case 7:
                 _b.sent();
                 res.status(204).send({
                     message: 'user updated successfully',
                     user: user,
                 });
-                return [3 /*break*/, 4];
-            case 3:
-                err_1 = _b.sent();
-                next(err_1);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 9];
+            case 8:
+                err_2 = _b.sent();
+                next(err_2);
+                return [3 /*break*/, 9];
+            case 9: return [2 /*return*/];
         }
     });
 }); });
 Router.put('/api/update-password/:id', require_auth_1.requireAuth, password_validator_1.PasswordValidator, validate_request_1.validateRequest, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, user, _a, oldPassword, newPassword, isValid, hash, err_2;
+    var id, user, _a, oldPassword, newPassword, isValid, hash, err_3;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
@@ -125,19 +147,19 @@ Router.put('/api/update-password/:id', require_auth_1.requireAuth, password_vali
                 });
                 return [3 /*break*/, 6];
             case 5:
-                err_2 = _b.sent();
-                next(err_2);
+                err_3 = _b.sent();
+                next(err_3);
                 return [3 /*break*/, 6];
             case 6: return [2 /*return*/];
         }
     });
 }); });
 Router.put('/api/profile/:id', require_auth_1.requireAuth, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var id, profile, _a, bio, dob, themeUrl, err_3;
+    var id, profile, _a, bio, dob, themeUrl, file, result, err_4, err_5;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _b.trys.push([0, 3, , 4]);
+                _b.trys.push([0, 8, , 9]);
                 id = req.params.id;
                 return [4 /*yield*/, profile_1.Profile.findOne({ user: id })];
             case 1:
@@ -147,32 +169,50 @@ Router.put('/api/profile/:id', require_auth_1.requireAuth, function (req, res, n
                 }
                 _a = req.body, bio = _a.bio, dob = _a.dob;
                 themeUrl = profile.themeUrl;
-                if (req.files && req.files.length > 0) {
-                    themeUrl = req.files[0].path;
-                }
+                if (!(req.files && req.files.length > 0)) return [3 /*break*/, 6];
+                file = req.files[0];
+                console.log('aws result awaited', file);
+                themeUrl = file.path;
+                _b.label = 2;
+            case 2:
+                _b.trys.push([2, 5, , 6]);
+                return [4 /*yield*/, (0, s3_1.uploadFile)(file)];
+            case 3:
+                result = _b.sent();
+                console.log('aws result', result);
+                themeUrl = 'images/' + result.Key;
+                return [4 /*yield*/, unlink(file.path)];
+            case 4:
+                _b.sent();
+                return [3 /*break*/, 6];
+            case 5:
+                err_4 = _b.sent();
+                console.log('aws error', err_4);
+                throw err_4;
+            case 6:
                 profile.set({
                     bio: bio,
                     dob: dob,
                     themeUrl: themeUrl
                 });
                 return [4 /*yield*/, profile.save()];
-            case 2:
+            case 7:
                 _b.sent();
                 res.status(204).send({
                     message: 'profile updated successfully',
                     profile: profile,
                 });
-                return [3 /*break*/, 4];
-            case 3:
-                err_3 = _b.sent();
-                next(err_3);
-                return [3 /*break*/, 4];
-            case 4: return [2 /*return*/];
+                return [3 /*break*/, 9];
+            case 8:
+                err_5 = _b.sent();
+                next(err_5);
+                return [3 /*break*/, 9];
+            case 9: return [2 /*return*/];
         }
     });
 }); });
 Router.put('/api/online-check', require_auth_1.requireAuth, function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
-    var online, id, user, err_4;
+    var online, id, user, err_6;
     var _a;
     return __generator(this, function (_b) {
         switch (_b.label) {
@@ -219,8 +259,8 @@ Router.put('/api/online-check', require_auth_1.requireAuth, function (req, res, 
                 });
                 return [3 /*break*/, 4];
             case 3:
-                err_4 = _b.sent();
-                next(err_4);
+                err_6 = _b.sent();
+                next(err_6);
                 return [3 /*break*/, 4];
             case 4: return [2 /*return*/];
         }
